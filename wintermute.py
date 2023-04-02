@@ -96,19 +96,19 @@ async def dog(interaction: discord.Interaction, breed: str = None, number: int =
         if breed != None:
             if '-' in breed:
                 breeds = breed.split('-')
-                dogURL = dogURL + "breed/" + breeds[0] + f"/" + breeds[1] + f"/"
+                dogURL = dogURL + "breed/" + breeds[0] + "/" + breeds[1] + "/"
             else:
-               dogURL = dogURL + "breed/" + breed + f"/" 
-            if number != None and type(number) == int:
-                dogURL = dogURL + f"images/random/" + str(number)
+               dogURL = dogURL + "breed/" + breed + "/" 
+            if number != None and isinstance(number, int):
+                dogURL = dogURL + "images/random/" + str(number)
             else:
-                dogURL = dogURL + f"images/random/"
+                dogURL = dogURL + "images/random/"
         else:
             dogURL = dogURL + "breeds/"
-            if number != None and type(number) == int:
-                dogURL = dogURL + f"image/random/" + str(number)
+            if number != None and isinstance(number, int):
+                dogURL = dogURL + "image/random/" + str(number)
             else:
-                dogURL = dogURL + f"image/random/"
+                dogURL = dogURL + "image/random/"
         
         try:
             async with session.get(dogURL) as response:
@@ -120,15 +120,15 @@ async def dog(interaction: discord.Interaction, breed: str = None, number: int =
                 dogTags = response["message"]
                 embed = discord.Embed(color=0xFF5733)
 
-                for i in range(len(dogTags)):
-                    embed.set_author(name=f"{dogTags[i]}")
-                    embed.set_image(url=dogTags[i])
-                    if i >= 1: #can't reply to original message more than once, so must followup instead if > 1
+                for dogNum in range(len(dogTags)):
+                    embed.set_author(name=f"{dogTags[dogNum]}")
+                    embed.set_image(url=dogTags[dogNum])
+                    if dogNum >= 1: #can't reply to original message more than once, so must followup instead if > 1
                         await interaction.followup.send(embed=embed)
                     else:
                         await interaction.response.send_message(embed=embed)
-        except:
-            print("error lol")
+        except Exception as e:
+            print(f"An error has occured: {e}")
 
 @bot.event
 async def on_ready():
