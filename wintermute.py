@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
 import discord, asyncio, random, io, aiohttp, getCatGifs
-from discord.ext import commands, tasks
+from discord.ext import commands, tasks, app_commands
 from datetime import datetime, timedelta
 from discord.ext.commands import CommandNotFound
 from discord.utils import get
 from json import load
+from list import dogList
 
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix="/", intents=intents)
@@ -73,6 +74,61 @@ async def cat(interaction: discord.Interaction, tag: str = None):
                 embed.set_author(name=f"{catImage}")
                 embed.set_image(url=catImage)
                 await interaction.response.send_message(embed=embed)
+
+async def dog_autocompletion(
+    interaction: discord.Interaction,
+    current: str
+) -> list[app_commands.Choice[str]]:
+    data = []
+    for dog_choice in dogList:
+        if current.lower() in dog_choice.lower():
+            data.append(app_commands.Choice(name=dog_choice, value=dog_choice))
+    if len(data) > 25:
+        del data[25:]
+    return data
+
+@bot.tree.command(name="dogpls")
+@app_commands.autocomplete(breed=dog_autocompletion)
+async def dog(interaction: discord.Interaction, breed: str = None, number: int = None):
+    async with aiohttp.ClientSession() as session: 
+        dogURL = "https://dog.ceo/api/"
+
+        if breed != None:
+            if '-' in breed:
+                breeds = breed.split('-')
+                dogURL = dogURL + "breed/" + breeds[0] + "/" + breeds[1] + "/"
+            else:
+               dogURL = dogURL + "breed/" + breed + "/" 
+            if number != None and isinstance(number, int):
+                dogURL = dogURL + "images/random/" + str(number)
+            else:
+                dogURL = dogURL + "images/random/"
+        else:
+            dogURL = dogURL + "breeds/"
+            if number != None and isinstance(number, int):
+                dogURL = dogURL + "image/random/" + str(number)
+            else:
+                dogURL = dogURL + "image/random/"
+        
+        try:
+            async with session.get(dogURL) as response:
+                if response.status != 200:
+                    await interaction.response.send_message("We couldn't seem to find a dog for you D:")
+                    return
+
+                response = await response.json()
+                dogTags = response["message"]
+                embed = discord.Embed(color=0xFF5733)
+
+                for dogNum in range(len(dogTags)):
+                    embed.set_author(name=f"{dogTags[dogNum]}")
+                    embed.set_image(url=dogTags[dogNum])
+                    if dogNum >= 1: #can't reply to original message more than once, so must followup instead if > 1
+                        await interaction.followup.send(embed=embed)
+                    else:
+                        await interaction.response.send_message(embed=embed)
+        except Exception as e:
+            print(f"An error has occured: {e}")
 
 @bot.event
 async def on_ready():
