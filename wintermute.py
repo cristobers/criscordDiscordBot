@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
 import discord, asyncio, random, io, aiohttp, getCatGifs
-from discord.ext import commands, tasks, app_commands
+from discord.ext import commands, tasks
+from discord import app_commands
 from datetime import datetime, timedelta
-from discord.ext.commands import CommandNotFound
+# from discord.ext.commands import CommandNotFound, app_commands
 from discord.utils import get
 from json import load
 from list import dogList
@@ -89,44 +90,29 @@ async def dog_autocompletion(
 
 @bot.tree.command(name="dogpls")
 @app_commands.autocomplete(breed=dog_autocompletion)
-async def dog(interaction: discord.Interaction, breed: str = None, number: int = None):
+async def dog(interaction: discord.Interaction, breed: str = None):
     async with aiohttp.ClientSession() as session: 
         dogURL = "https://dog.ceo/api/"
-
         if breed != None:
             if '-' in breed:
-                breeds = breed.split('-')
-                dogURL = dogURL + "breed/" + breeds[0] + "/" + breeds[1] + "/"
+                breeds = breed.replace('-', '/')
+                dogURL = f"{dogURL}breed/{breeds}/images/random/"
+                print(dogURL)
             else:
-               dogURL = dogURL + "breed/" + breed + "/" 
-            if number != None and isinstance(number, int):
-                dogURL = dogURL + "images/random/" + str(number)
-            else:
-                dogURL = dogURL + "images/random/"
+                dogURL = f"{dogURL}breed/{breed}/images/random/"
         else:
-            dogURL = dogURL + "breeds/"
-            if number != None and isinstance(number, int):
-                dogURL = dogURL + "image/random/" + str(number)
-            else:
-                dogURL = dogURL + "image/random/"
-        
+            dogURL = f"{dogURL}breeds/image/random/" 
         try:
             async with session.get(dogURL) as response:
                 if response.status != 200:
                     await interaction.response.send_message("We couldn't seem to find a dog for you D:")
                     return
-
                 response = await response.json()
                 dogTags = response["message"]
                 embed = discord.Embed(color=0xFF5733)
-
-                for dogNum in range(len(dogTags)):
-                    embed.set_author(name=f"{dogTags[dogNum]}")
-                    embed.set_image(url=dogTags[dogNum])
-                    if dogNum >= 1: #can't reply to original message more than once, so must followup instead if > 1
-                        await interaction.followup.send(embed=embed)
-                    else:
-                        await interaction.response.send_message(embed=embed)
+                embed.set_author(name=str(dogTags))
+                embed.set_image(url=dogTags)
+                await interaction.response.send_message(embed=embed)
         except Exception as e:
             print(f"An error has occured: {e}")
 
