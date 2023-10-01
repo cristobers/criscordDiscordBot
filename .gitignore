@@ -1,3 +1,9 @@
+# Ignore temp vim files
+.*.sw?
+
+# Ignore token file
 clientkey.json
-.wintermute.py.swp
+
+# Ignore pycache folders
+extensions/__pycache__/
 __pycache__/
