@@ -1,28 +1,52 @@
 #!/usr/bin/python3
 
-import discord, asyncio, random, io, aiohttp
-from discord.ext import commands, tasks
-from discord import app_commands
-from datetime import datetime, timedelta
-from discord.utils import get
+import discord, asyncio, io 
+from discord.ext import commands 
 from json import load
 
 intents = discord.Intents().all()
 bot = commands.Bot(command_prefix="/", intents=intents)
+owner_id = 66183829148151808
 
 with open("clientkey.json") as f:
     data = load(f)
     token = data["TOKEN"]
 
+# i think these would be better suited witin a cog
+def is_owner(ctx, owner_id):
+    if ctx.author.id != owner_id:
+        return False
+    return True
+
+@bot.command()
+async def sync(ctx):
+    if is_owner(ctx, owner_id):
+        synced = await bot.tree.sync()
+        await ctx.send(f"Synced {len(synced)} commands")
+
+@bot.command()
+async def load(ctx, extension: str):
+    if is_owner(ctx, owner_id):
+        await bot.load_extension(extension)
+        await ctx.send(f"Loaded extension {extension}")
+
+@bot.command()
+async def unload(ctx, extension: str):
+    if is_owner(ctx, owner_id):
+        await bot.unload_extension(extension)
+        await ctx.send(f"Unloaded extension {extension}")
+
+@bot.command()
+async def reload(ctx, extension:str):
+    if is_owner(ctx, owner_id):
+        await bot.unload_extension(extension)
+        await bot.load_extension(extension)
+        await ctx.send(f"Reloaded extension {extension}")
+
 @bot.event
 async def on_ready():
-    test = discord.abc.Snowflake
-    test.id = 823948478786306049
-
     await bot.load_extension("extensions.animal_commands")
     await bot.load_extension("extensions.fun_commands")
 
-    synced = await bot.tree.sync(guild=test)
-    print(f"Synced {len(synced)} commands")
     print("Bot is up")
 bot.run(token)
