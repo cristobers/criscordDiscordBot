@@ -1,0 +1,4 @@
+# Requirements for this Discord bot
+
+discord.py
+aiohttp

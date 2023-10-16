@@ -12,11 +12,10 @@ with open("clientkey.json") as f:
     data = load(f)
     token = data["TOKEN"]
 
-# i think these would be better suited witin a cog
 def is_owner(ctx, owner_id):
-    if ctx.author.id != owner_id:
-        return False
-    return True
+    if ctx.author.id == owner_id:
+        return True
+    return False
 
 @bot.command()
 async def sync(ctx):
@@ -28,25 +27,25 @@ async def sync(ctx):
 async def load(ctx, extension: str):
     if is_owner(ctx, owner_id):
         await bot.load_extension(extension)
-        await ctx.send(f"Loaded extension {extension}")
+        await ctx.send(f"Loaded {extension}")
 
 @bot.command()
 async def unload(ctx, extension: str):
     if is_owner(ctx, owner_id):
         await bot.unload_extension(extension)
-        await ctx.send(f"Unloaded extension {extension}")
+        await ctx.send(f"Unloaded {extension}")
 
 @bot.command()
-async def reload(ctx, extension:str):
+async def reload(ctx, extension: str):
     if is_owner(ctx, owner_id):
         await bot.unload_extension(extension)
         await bot.load_extension(extension)
-        await ctx.send(f"Reloaded extension {extension}")
+        await ctx.send(f"Reloaded {extension}")
 
 @bot.event
 async def on_ready():
     await bot.load_extension("extensions.animal_commands")
     await bot.load_extension("extensions.fun_commands")
-
     print("Bot is up")
+
 bot.run(token)

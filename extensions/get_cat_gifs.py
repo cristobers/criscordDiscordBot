@@ -3,7 +3,6 @@ from io import BytesIO
 from asyncio import run
 
 # URL = 'https://cataas.com/cat/Cls8xWGi0Xm3d2EK'
-
 async def download_cat_image(URL):
     async with ClientSession() as session:
         async with session.get(URL) as a:
@@ -11,8 +10,6 @@ async def download_cat_image(URL):
             return BytesIO(content)
             
 async def main(URL):
-    #catFile = await download_cat_image(URL)
-    #return catFile
     return await download_cat_image(URL)
 
 if __name__ == '__main__':
