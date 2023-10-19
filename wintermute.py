@@ -43,6 +43,11 @@ async def reload(ctx, extension: str):
         await ctx.send(f"Reloaded {extension}")
 
 @bot.event
+async def on_message(message):
+    if "https://x.com/" in message.content or "https://twitter.com/" in message.content:
+        await message.reply("https://www.fxtwitter.com/" + message.content[14:])
+
+@bot.event
 async def on_ready():
     await bot.load_extension("extensions.animal_commands")
     await bot.load_extension("extensions.fun_commands")
