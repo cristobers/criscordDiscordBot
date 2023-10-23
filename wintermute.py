@@ -45,7 +45,8 @@ async def reload(ctx, extension: str):
 @bot.event
 async def on_message(message):
     if "https://x.com/" in message.content or "https://twitter.com/" in message.content:
-        await message.reply("https://www.fxtwitter.com/" + message.content[14:])
+        await message.reply(
+                "https://fxtwitter.com/" + message.content.split(".com/")[1])
 
 @bot.event
 async def on_ready():
